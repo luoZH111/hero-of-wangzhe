@@ -1,0 +1,273 @@
+import java.util.List;
+import java.awt.AWTException;
+import java.util.*;
+
+/**
+ * <p>类{@code Battlefield}是战场类，所有操作都需要经过战场类的调用
+ * <br>拥有属性：英雄，士兵，地图，地图大小
+ * <br>拥有方法：init_map，show_of_battlefield，creat_hero，move_hero，attack，game_over,quick_escape,boom
+ * @author luoZH
+ * @since 2018/10/20
+ */
+class Battlefield {
+	/**
+	 * <p>英雄链表
+	 */
+	List<Role> role=new ArrayList<Role>(); 
+	/**
+	 * <p>士兵链表,其中用字符I代表士兵
+	 */
+	List<Soldier> soldier=new ArrayList<Soldier>();
+	
+	/**
+	 * <p>战场地图
+	 */
+	Map map;
+	/**
+	 * <p>战场地图的大小
+	 */
+	static int n=30,m=50;
+	/**
+	 * <p>
+	 */
+	/**
+	 * <p>战场地图的初始化，初始化士兵
+	 */
+	void init_map()
+	{
+		map=new Map(n,m);
+		int t=14,x=10,y=10;
+		while(t--!=0)
+		{			
+			Soldier s=new Soldier( 10, 0, x, y,'I');
+			soldier.add(s);
+			map.addRole(x,y,'I');
+			x=(x*2+3)%n;
+			if(x==0) x++;
+			if(x==n-1) x--;
+			y=(y+13)%m;
+			if(y==0) y++;
+			if(y==m-1) y--;
+		}
+	}
+	/**
+	 * <p>战场地图的展示
+	 */
+	void show_of_battlefield()
+	{
+		map.show_of_map();
+	}
+	/**
+	 * <p>英雄的创建
+	 */
+	boolean creat_hero()
+	{
+		if(role.size()>=5)
+		{
+			System.out.print("You can't creat over 5 heros!\n");
+			return false;
+		}
+		int hp, mp, Mhp, Mmp, xx, yy;
+		System.out.print("please output Mhp Mmp, the location and the name of role:\n");
+		System.out.print("(0<x<30 and 0<y<50)");
+		Scanner sc=new Scanner(System.in);
+		Mhp=sc.nextInt();
+		Mmp=sc.nextInt();
+		xx=sc.nextInt();
+		yy=sc.nextInt();
+		String c=sc.next();
+		System.out.printf("over input\n");
+		if(map.Check_map(xx, yy)==false)
+		{
+			System.out.printf("The position of the new hero is illegal!\n");
+			return false;
+		}
+		Role r=new Role( Mhp, Mmp, xx, yy,c.charAt(0));
+		role.add(r);
+		
+		map.addRole(xx,yy,c.charAt(0));
+		return true;
+		//sc.close();
+	}
+	/**
+	 * <p>英雄的移动
+	 */
+	boolean move_hero()
+	{
+		System.out.printf("please output the hero you want to move and move the hero using U,D,L,R:\n");
+		Scanner sc=new Scanner(System.in);
+		String c=sc.next(),cc=sc.next();
+		//Iterator<Role> it;
+		boolean flag=false;
+		for (Role role2 : role) 
+		{
+			if(role2.get_name()==c.charAt(0))
+			{
+				//System.out.printf("hero:%c x:%d  y:%d \n",role2.get_name(),role2.get_x(),role2.get_y());
+				int x=role2.get_x();
+				int y=role2.get_y();
+				flag=map.Check_map(x, y, cc);		
+				//System.out.printf("hero:%c x:%d  y:%d \n",role2.get_name(),role2.get_x(),role2.get_y());
+				if(flag)
+				{
+					System.out.printf("the move is successful\n");
+					role2.Move(cc);
+					map.update_map(x,y,role2.get_x(), role2.get_y(), role2.get_name());
+				}
+				break;
+			}
+		}
+		if(flag==false)
+			System.out.print("No hero of such name, or your operation is illegal!\n");
+		return flag;
+		/*for(it=role.iterator();it.hasNext();it.next())
+		{
+			Role r=it.next();
+			if(r.get_name()==c.charAt(0))
+				break;
+		}*/
+		
+	}
+	/**
+	 * <p>英雄的攻击，可对附近敌方产生一点的伤害值
+	 */
+	boolean attack()throws AWTException
+	{
+		System.out.printf("Choose the neme of hero you want to operate:\n");
+		Scanner sc=new Scanner(System.in);
+		String c=sc.next();
+		boolean flag=false;
+		for (Role role2 : role) 
+		{
+			if(role2.get_name()==c.charAt(0))
+			{
+				flag=true;
+				int x=role2.get_x();
+				int y=role2.get_y();
+				map.attack(x,y);
+				int count=map.kill_soilder(x,y);
+				if(count>0)
+				{
+					if(count>1)
+						System.out.printf("you have killed %d soliders\n",count);
+					else
+						System.out.printf("you have killed %d solider\n",count);
+				}
+				break;
+			}
+		}
+		if(flag==false)
+			System.out.print("No hero of such name\n");
+		return flag;
+	}
+	/**
+	 * <p>判断游戏是否结束，游戏结束的条件是敌方被消灭
+	 */
+	boolean game_over()
+	{
+		if(map.is_over())
+			return true;
+		return false;
+	}
+	/**
+	 * <p>英雄的瞬移技能，最多只能瞬移30步，需要消耗相应步数的魔法值
+	 */
+	void quick_escape()throws AWTException
+	{
+		System.out.printf("Choose the neme of hero you want to operate:\n");
+		Scanner sc=new Scanner(System.in);
+		String c=sc.next();
+		System.out.printf("Choose the direction you want to choose and the steps of escape(at most 30 steps)\n");
+		String cc=sc.next();
+		int step=sc.nextInt();
+		if(step>30)
+		{
+			System.out.printf("steps is too many that the hero can't do it!\n");
+			return;
+		}
+		boolean flag=false;
+		for (Role role2 : role) 
+		{
+			if(role2.get_name()==c.charAt(0))
+			{
+				flag=true;
+				int x=role2.get_x();
+				int y=role2.get_y();
+				int mp=role2.get_Mp();
+				if(mp<step)
+					step=mp;
+				
+				int count=map.quick_escape(x, y, cc,step);	
+				if(count==-1)
+				{
+					System.out.printf("No hero of such name, or your operation is illegal!\n");
+				}
+				else
+				{
+					if(count>1)
+						System.out.printf("The hero have escape for %d steps\n",count);
+					else
+						System.out.printf("The hero have escape for %d step\n",count);
+					mp-=count;
+					role2.update_MP(count);
+					if(c.equals("U"))  x-=count;					
+					else if(c.equals("D")) x+=count;						
+					else if(c.equals("R")) y+=count;				
+					else if(c.equals("L")) y-=count;
+					role2.update_location(x,y);	
+					
+					System.out.printf("The hero have cost his mp of %d,now he has %d MP\n",count,mp);
+				}
+				break;
+			}
+			
+		}
+		if(flag==false)
+			System.out.printf("No hero of such name, or your operation is illegal!\n");
+	}
+	/**
+	 * <p>英雄的大招技能--爆炸,通过连续的暴击，能对周围的敌方产生30点的伤害值
+	 */
+	void boom()throws AWTException
+	{
+		System.out.printf("Choose the neme of hero you want to operate:\n");
+		Scanner sc=new Scanner(System.in);
+		String c=sc.next();
+		boolean flag=false;
+		for (Role role2 : role) 
+		{
+			if(role2.get_name()==c.charAt(0))
+			{
+				flag=true;
+				int x=role2.get_x();
+				int y=role2.get_y();
+				char name=role2.get_name();
+				int mp=role2.get_Mp(),count=30;
+				if(mp<30)
+				{
+					flag=false;break;
+				}
+				int num=map.boom(x,y);
+				map.show_of_map();
+				System.out.printf("The hero %c have cost his mp of 30,now he has %d MP\n",name,mp-30);
+				role2.update_MP(30);
+				if(num>1)
+					System.out.printf("you have killed %d soliders\n",num);
+				else
+					System.out.printf("you have killed %d solider\n",num);
+				break;
+			}
+			
+		}
+		if(flag==false)
+			System.out.printf("No hero of such name, or the hero's MP is not enough!\n");
+	}
+	/*void judge_of_battle()
+	{
+		for(int i=0;i<role.size();i++)
+		{
+			if(role[i])
+				map.role_of_erase(role[i])
+		}
+	}*/
+}
