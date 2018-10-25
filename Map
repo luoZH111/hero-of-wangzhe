@@ -1,0 +1,336 @@
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+/**
+ * <p>类{@code Map}是地图类，大 部分操作都需要经过调用该类更新地图
+ * <br>拥有属性：地图附属物（英雄，士兵）,地图，地图大小
+ * <br>拥有方法：Check_map,is_over,isok,Clear,position,change,attack,kill_soilder,
+ * quick_escape,boom,update_map,addRole,show_of_map
+ * @author luoZH
+ * @since 2018/10/20
+ */
+public class Map {
+	/**
+	 * <p>地图的长宽
+	 */
+
+	static int n,m;
+	/**
+	 * <p>二维地图
+	 */
+	static char [][]map_of_field;
+	/**
+	 * <p>地图的初始化
+	 */
+	Map(int nn,int mm)
+	{
+		n=nn;m=mm;
+		map_of_field=new char [n+1][m+1];
+		for(int i=0;i<n;i++)
+			for(int j=0;j<m;j++)
+				map_of_field[i][j]=' ';
+		for(int i=0;i<n;i++)
+		{
+			map_of_field[i][0]='|';
+			map_of_field[i][m-1]='|';
+		}
+		for(int i=0;i<m;i++)
+		{
+			map_of_field[0][i]='-';
+			map_of_field[n-1][i]='-';
+		}
+	}
+	/**
+	 * <p>判断移动位置是否合法
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	boolean Check_map(int x,int y)
+	{
+		if(map_of_field[x][y]!=' ')
+			return false;
+		return true;
+	}
+	/**
+	 * <p>判断游戏是否结束
+	 */
+	boolean is_over()
+	{
+		for(int i=0;i<n;i++)
+			for(int j=0;j<m;j++)
+			{
+				if(map_of_field[i][j]=='I')
+					return false;
+			}
+		return true;
+	}
+	/**
+	 * <p>判断该位置是否越界
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	boolean isok(int x,int y)
+	{
+		if(x<0||x>=n||y<0||y>=m)
+			return false;
+		return true;
+	}
+	/**
+	 * <p>判断英雄移动位置是否合法
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 * @param s 操作名
+	 */
+	boolean Check_map(int x,int y,String s)
+	{
+		if(s.equals("U"))
+		{
+			if(x>0)
+			{
+				x-=1;
+				if(map_of_field[x][y]!=' ')
+					return false;
+				else
+					return true;//System.out.printf("X:%d\n",x);
+			}
+			else
+				return false;
+		}
+		else if(s.equals("D"))//
+		{
+			if((x+1)<n)
+			{
+				x+=1;
+				if(map_of_field[x][y]!=' ')
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
+		}
+		else if(s.equals("L"))
+		{
+			if(y>0)
+			{
+				y-=1;
+				if(map_of_field[x][y]!=' ')
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
+		}
+		else if(s.equals("R"))//
+		{
+			if((y+1)<m)
+			{
+				y+=1;
+				if(map_of_field[x][y]!=' ')
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
+		}
+		return false;
+	}
+	/**
+	 * <p>清屏操作,完成地图动态的关键方法
+	 */
+	void Clear()throws AWTException
+	{
+		try {
+		    Thread.sleep(200);
+		} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		    e.printStackTrace();
+		}
+		Robot r = new Robot();
+		r.mousePress(InputEvent.BUTTON3_DOWN_MASK);		//按下鼠标右键
+		r.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);	//释放鼠标右键
+		r.keyPress(KeyEvent.VK_CONTROL);				//按下Ctrl键
+		r.keyPress(KeyEvent.VK_R);						//按下R键
+		r.keyRelease(KeyEvent.VK_R);					//释放R键
+		r.keyRelease(KeyEvent.VK_CONTROL);				//释放Ctrl键
+		r.delay(100);
+	}
+	/**
+	 * <p>返回该位置的物品或英雄
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	char position(int x,int y)
+	{
+		return map_of_field[x][y];
+			
+	}
+	/**
+	 * <p>攻击时对地图的覆盖物进行暂时性隐藏
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	void change(int x,int y,char c)throws AWTException
+	{
+		char cc=map_of_field[x][y];
+		map_of_field[x][y]=c;
+		Clear();
+		show_of_map();
+		Clear();
+		map_of_field[x][y]=cc;
+		show_of_map();
+		
+	}
+	/**
+	 * <p>英雄攻击时地图的技能效果
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	void attack(int x,int y)throws AWTException
+	{
+		int dx[]={0,0,1,-1};
+		int dy[]={1,-1,0,0};
+		for(int i=0;i<4;i++)
+		{
+			if(isok(x+dx[i],y+dy[i]))
+				change(x+dx[i],y+dy[i],'*');
+			
+		}
+	}
+	/**
+	 * <p>英雄攻击时对士兵的伤害或杀死
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	int kill_soilder(int x,int y)
+	{
+		int dx[]={0,0,1,-1};
+		int dy[]={1,-1,0,0};
+		int count=0;
+		for(int i=0;i<4;i++)
+		{
+			if(isok(x+dx[i],y+dy[i]))
+				if(map_of_field[x+dx[i]][y+dy[i]]=='I')
+				{
+					count++;
+					//show_of_map();
+					map_of_field[x+dx[i]][y+dy[i]]=' ';
+				}
+		}
+		show_of_map();
+		return count;
+	}
+	/**
+	 * <p>英雄瞬移技能在地图上的技能和动态效果
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 * @param steps 瞬移距离
+	 */
+	int quick_escape(int x,int y,String c,int steps)throws AWTException
+	{
+		int dx=0,dy=0;
+		if(c.equals("U"))
+			dx-=1;
+		else if(c.equals("D"))
+			dx+=1;
+		else if(c.equals("R"))
+			dy+=1;
+		else if(c.equals("L"))
+			dy-=1;
+		else 
+			return -1;
+		int count=0;
+		while(Check_map(x+dx,y+dy)&&steps-->0)
+		{
+			count++;
+			update_map(x,y,x+dx,y+dy,map_of_field[x][y]);
+			x+=dx;y+=dy;
+			Clear();
+			show_of_map();
+			Clear();
+		}
+		show_of_map();
+		
+		return count;
+	}
+	/**
+	 * <p>英雄爆炸技能在地图上的效果显示
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	int boom(int x,int y)throws AWTException
+	{
+		int t=1,tt=5;
+		int dx[]={1,-1,1,-1};
+		int dy[]={1,-1,-1,1};
+		int count=0;
+		while(tt-->0)
+		{
+			for(int i=0;i<4;i++)
+			{
+				if(isok(x+dx[i]*t,y+dy[i]*t))
+				{
+					if(map_of_field[x+dx[i]*t][y+dy[i]*t]!=' ')
+						count++;
+					map_of_field[x+dx[i]*t][y+dy[i]*t]='*';
+				}		
+			}
+			t++;
+			show_of_map();
+			Clear();
+		}
+		tt=5;t=1;
+		while(tt-->0)
+		{
+			for(int i=0;i<4;i++)
+			{
+				if(isok(x+dx[i]*t,y+dy[i]*t))
+				{
+					map_of_field[x+dx[i]*t][y+dy[i]*t]=' ';
+				}				
+			}
+			t++;
+			show_of_map();
+			Clear();		
+		}
+		return count;
+	}
+	/**
+	 * <p>英雄位置的更新
+	 */
+
+	void update_map(int xx,int yy,int x,int y,char c)
+	{
+		map_of_field[xx][yy]=' ';
+		map_of_field[x][y]=c;
+	}
+	/**
+	 * <p>在地图上生成英雄
+	 */
+	boolean addRole(int x,int y,char c)
+	{
+		if(map_of_field[x][y]!=' ')
+			return false;
+		map_of_field[x][y]=c;
+		//System.out.printf("over addhero\n");
+		return true;
+	}
+	/**
+	 * <p>地图展示
+	 */
+	void show_of_map()
+	{
+		for(int i=0;i<n;i++)
+		{
+			System.out.println(map_of_field[i]);
+			/*for(int j=0;j<m;j++)
+			{
+				//if(map_of_field[i][j]=='#')
+				
+			}*/
+		}
+	}
+}
