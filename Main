@@ -1,0 +1,65 @@
+import java.util.Scanner;
+import java.util.List;
+import java.awt.AWTException;
+import java.util.*;
+
+
+/**
+ * <p>类{@code Main}是主类，主要对其他的类进行调用
+ * @author luoZH
+ * @since 2018/10/20
+ */
+
+public class Main
+{
+	static int n=30,m=50;
+	/**
+	 * <p>游戏是否结束的标志
+	 */
+	static boolean game_over;
+	public static void main(String[] args)throws AWTException
+	{
+		Scanner sc=new Scanner(System.in);
+		
+		Battlefield bf=new Battlefield();
+		bf.init_map();
+		bf.show_of_battlefield();
+		game_over=false;
+		String cc,ss;
+		while(game_over==false)	
+		{
+			System.out.printf("please choose your operation :\n");
+			System.out.printf("Creathero Movehero  Attack Skills\n");
+			cc=sc.next();
+			if(cc.equals("Creathero"))
+			{
+				if(bf. creat_hero())
+					bf.show_of_battlefield();
+			}
+			if(cc.equals("Movehero"))
+			{
+				if(bf.move_hero())
+					bf.show_of_battlefield();
+			}
+			if(cc.equals("Attack"))
+			{
+				bf.attack();
+			}
+			if(cc.equals("Skills"))
+			{
+				System.out.printf("Choose the skill you want to show:\n");
+				System.out.printf("Escape Boom \n");
+				ss=sc.next();
+				if(ss.equals("Escape"))
+					bf.quick_escape();
+				if(ss.equals("Boom"))
+					bf.boom();
+			}
+			if(bf.game_over())
+			{
+				System.out.printf("You win the game!\n");
+				break;
+			}
+		}
+	}
+}
