@@ -1,0 +1,61 @@
+import java.util.Scanner;
+import java.util.List;
+import java.awt.AWTException;
+import java.util.*;
+
+/**
+ * <p>类{@code Skill}是技能类，作为角色类的拥有属性
+ * <br>拥有属性：伤害值，魔法消耗值
+ * @author luoZH
+ * @since 2018/10/20
+ */
+public class Skill {
+	/**
+	 * <p>伤害值cur_of_HP和对敌方的魔法消耗值cur_of_MP
+	 */
+	int cur_of_HP;
+	int cur_of_MP;
+	/**
+	 * <p>伤害值cur_of_HP和对敌方的魔法消耗值cur_of_MP的初始化
+	 */
+	Skill(int curh,int curm)
+	{
+		cur_of_HP=curh;
+		cur_of_MP=curm;
+		
+	}
+}
+/**
+ * <p>类{@code ActiveSkill}是主动技能类，对技能类进行继承
+ * <br>拥有属性：伤害值，魔法消耗值，作用时间，作用范围
+ * @author luoZH
+ * @since 2018/10/20
+ */
+class ActiveSkill extends Skill
+{
+	int length_of_time;
+	int coverage_of_skill;
+	ActiveSkill(int curh,int curm,int t,int c)
+	{
+		super(curh,curm);
+		length_of_time=t;
+		coverage_of_skill=c;
+		
+	}
+}
+/**
+ * <p>类{@code PassiveSkill}是被动技能类，对技能类进行继承
+ * <br>拥有属性：伤害值，魔法消耗值，生命恢复值，魔法恢复值
+ * @author luoZH
+ * @since 2018/10/20
+ */
+class PassiveSkill extends Skill
+{
+	int add_HP,add_MP;
+	PassiveSkill(int curh,int curm,int ah,int am)
+	{
+		super(curh,curm);
+		add_HP=ah;
+		add_MP=am;
+	}
+}
